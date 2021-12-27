@@ -3,8 +3,5 @@
     "cmake.configureSettings": {
         "CMAKE_PREFIX_PATH": "C:/Qt/5.15.2/msvc2019_64",
         "ASIOSDK_ROOT_DIR": "C:/Program Files (x86)/ASIOSDK2"
-    },
-    "files.associations": {
-        "cstdlib": "cpp"
     }
 }

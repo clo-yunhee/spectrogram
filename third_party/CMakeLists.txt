@@ -33,3 +33,7 @@ set(PA_BUILD_SHARED OFF CACHE INTERNAL "" FORCE)
 
 add_subdirectory(portaudio)
 target_include_directories(portaudio_static INTERFACE $<TARGET_PROPERTY:portaudio_static,SOURCE_DIR>/include²)
+
+#-- Build bgfx
+
+add_subdirectory(bgfx.cmake)

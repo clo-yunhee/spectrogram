@@ -12,11 +12,13 @@ struct AudioHostInfo {
     QString name;
     int deviceCount;
     int defaultInputDevice;
+    int defaultOutputDevice;
 };
 
 struct AudioDeviceInfo {
     int index;
     QString name;
+    int defaultInputLatency;
     int defaultOutputLatency;
     double defaultSampleRate;
     QVector<double> availableSampleRates;
@@ -36,7 +38,9 @@ class AudioDevices : public QObject {
 
    signals:
     void hostInfoRefreshed(const QVector<AudioHostInfo>& infos);
-    void deviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
+
+    void inputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
+    void outputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
 
    private:
     QVector<double> supportedSampleRates(int deviceIndex) const;

@@ -13,10 +13,12 @@ class SettingsWindow : public QWidget {
 
    public slots:
     void handleHostInfoRefreshed(const QVector<AudioHostInfo>& infos);
-    void handleDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
+    void handleInputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
+    void handleOutputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
 
    private slots:
-    void handleDeviceSelected(int index);
+    void handleInputDeviceSelected(int index);
+    void handleOutputDeviceSelected(int index);
     void handleSampleRateSelected(int index);
     void handleFrequencyResolutionChanged(int index);
     void handleTimeResolutionChanged(double value);

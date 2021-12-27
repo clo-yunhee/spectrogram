@@ -18,16 +18,25 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QWidget(parent) {
 
     QObject::connect(ui.hostInterfaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
                      AudioDevices::instance(), &AudioDevices::refreshDeviceInfo);
-    QObject::connect(ui.audioDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-                     &SettingsWindow::handleDeviceSelected);
+
+    QObject::connect(ui.playbackDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+                     &SettingsWindow::handleOutputDeviceSelected);
+
+    QObject::connect(ui.recordingDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+                     &SettingsWindow::handleInputDeviceSelected);
+
     QObject::connect(ui.sampleRateComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
                      &SettingsWindow::handleSampleRateSelected);
+
     QObject::connect(ui.freqResComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
                      &SettingsWindow::handleFrequencyResolutionChanged);
+
     QObject::connect(ui.timeResSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
                      &SettingsWindow::handleTimeResolutionChanged);
 
     loadSettings();
+
+    adjustSize();
 }
 
 SettingsWindow::~SettingsWindow() {}
@@ -42,32 +51,54 @@ void SettingsWindow::handleHostInfoRefreshed(const QVector<AudioHostInfo>& infos
     ui.hostInterfaceComboBox->setCurrentIndex(Pa_GetDefaultHostApi());
 }
 
-void SettingsWindow::handleDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
-    ui.audioDeviceComboBox->clear();
+void SettingsWindow::handleInputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
+    ui.recordingDeviceComboBox->clear();
 
     const auto hostInfo = ui.hostInterfaceComboBox->currentData().value<AudioHostInfo>();
 
     int i = 0;
 
     for (const auto& info : infos) {
-        ui.audioDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
+        ui.recordingDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
 
         if (info.index == hostInfo.defaultInputDevice) {
-            ui.audioDeviceComboBox->setCurrentIndex(i);
+            ui.recordingDeviceComboBox->setCurrentIndex(i);
         }
 
         ++i;
     }
 
     if (hostInfo.defaultInputDevice < 0) {
-        ui.audioDeviceComboBox->setCurrentIndex(0);
+        ui.recordingDeviceComboBox->setCurrentIndex(0);
     }
 }
 
-void SettingsWindow::handleDeviceSelected(const int deviceIndex) {
+void SettingsWindow::handleOutputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
+    ui.playbackDeviceComboBox->clear();
+
+    const auto hostInfo = ui.hostInterfaceComboBox->currentData().value<AudioHostInfo>();
+
+    int i = 0;
+
+    for (const auto& info : infos) {
+        ui.playbackDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
+
+        if (info.index == hostInfo.defaultOutputDevice) {
+            ui.playbackDeviceComboBox->setCurrentIndex(i);
+        }
+
+        ++i;
+    }
+
+    if (hostInfo.defaultOutputDevice < 0) {
+        ui.playbackDeviceComboBox->setCurrentIndex(0);
+    }
+}
+
+void SettingsWindow::handleInputDeviceSelected(const int deviceIndex) {
     ui.sampleRateComboBox->clear();
 
-    auto deviceInfo = ui.audioDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
+    auto deviceInfo = ui.recordingDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
 
     int i = 0;
 
@@ -87,6 +118,12 @@ void SettingsWindow::handleDeviceSelected(const int deviceIndex) {
     }
 }
 
+void SettingsWindow::handleOutputDeviceSelected(const int deviceIndex) {
+    auto deviceInfo = ui.playbackDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
+
+    // TODO setting
+}
+
 void SettingsWindow::handleSampleRateSelected(const int index) {
     const double sampleRate = ui.sampleRateComboBox->itemData(index).toDouble();
 
@@ -98,7 +135,7 @@ void SettingsWindow::handleSampleRateSelected(const int index) {
     for (int nfft = nfft0; nfft <= nfft1; nfft *= 2) {
         const double deltaF = sampleRate / nfft;
 
-        ui.freqResComboBox->addItem(QString("%1 Hz").arg(deltaF, 0, 'f', 1).arg(nfft), nfft);
+        ui.freqResComboBox->addItem(QString("%1 Hz").arg(deltaF, 0, 'f', 1), nfft);
     }
 
     updateResolutionLabels();

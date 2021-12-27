@@ -10,6 +10,8 @@ add_executable(Spectrogram WIN32
     dsp/windowfunctions.cpp
     dsp/windowfunctions_defs.h
     dsp/windowfunctions.h
+    widgets/bgfxwidget.cpp
+    widgets/bgfxwidget.h
     windows/appwindow.cpp
     windows/appwindow.h
     windows/settingswindow.cpp
@@ -17,9 +19,9 @@ add_executable(Spectrogram WIN32
     main.cpp
 )
 
-target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static)
+target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static bgfx bx)
 
-target_compile_definitions(Spectrogram PRIVATE UNICODE _UNICODE)
+target_compile_definitions(Spectrogram PRIVATE UNICODE _UNICODE BX_CONFIG_DEBUG)
 
 target_link_libraries(Spectrogram PRIVATE Qt5::Core Qt5::Widgets fftw3)
 

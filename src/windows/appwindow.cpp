@@ -7,8 +7,12 @@ AppWindow::AppWindow() : m_settings(this) {
 
     QObject::connect(&m_audioDevices, &AudioDevices::hostInfoRefreshed, &m_settings,
                      &SettingsWindow::handleHostInfoRefreshed);
-    QObject::connect(&m_audioDevices, &AudioDevices::deviceInfoRefreshed, &m_settings,
-                     &SettingsWindow::handleDeviceInfoRefreshed);
+
+    QObject::connect(&m_audioDevices, &AudioDevices::inputDeviceInfoRefreshed, &m_settings,
+                     &SettingsWindow::handleInputDeviceInfoRefreshed);
+
+    QObject::connect(&m_audioDevices, &AudioDevices::outputDeviceInfoRefreshed, &m_settings,
+                     &SettingsWindow::handleOutputDeviceInfoRefreshed);
 
     m_audioDevices.refreshHostInfo();
 }

@@ -38,8 +38,7 @@ int main(int argc, char *argv[]) {
     setDarkPalette();
 
     AppWindow appWindow;
-
-    appWindow.show();
+    appWindow.showNormal();
 
     return application.exec();
 }

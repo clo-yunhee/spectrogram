@@ -26,6 +26,7 @@ void AudioDevices::refreshHostInfo() {
         info.name = QString::fromUtf8(paInfo->name);
         info.deviceCount = paInfo->deviceCount;
         info.defaultInputDevice = paInfo->defaultInputDevice;
+        info.defaultOutputDevice = paInfo->defaultOutputDevice;
 
         m_hostInfos.append(info);
     }
@@ -36,25 +37,32 @@ void AudioDevices::refreshHostInfo() {
 void AudioDevices::refreshDeviceInfo(int hostApiIndex) {
     const auto& hostInfo = m_hostInfos.at(hostApiIndex);
 
-    QVector<AudioDeviceInfo> devices;
+    QVector<AudioDeviceInfo> inputDevices;
+    QVector<AudioDeviceInfo> outputDevices;
 
     for (int i = 0; i < hostInfo.deviceCount; ++i) {
         const int index = Pa_HostApiDeviceIndexToDeviceIndex(hostInfo.index, i);
         const auto paInfo = Pa_GetDeviceInfo(index);
 
-        if (paInfo->maxInputChannels > 0) {
-            AudioDeviceInfo info;
-            info.index = index;
-            info.name = QString::fromUtf8(paInfo->name);
-            info.defaultOutputLatency = paInfo->defaultLowOutputLatency;
-            info.defaultSampleRate = paInfo->defaultSampleRate;
-            info.availableSampleRates = supportedSampleRates(index);
+        AudioDeviceInfo info;
+        info.index = index;
+        info.name = QString::fromUtf8(paInfo->name);
+        info.defaultInputLatency = paInfo->defaultLowInputLatency;
+        info.defaultOutputLatency = paInfo->defaultLowOutputLatency;
+        info.defaultSampleRate = paInfo->defaultSampleRate;
+        info.availableSampleRates = supportedSampleRates(index);
 
-            devices.append(info);
+        if (paInfo->maxInputChannels > 0) {
+            inputDevices.append(info);
+        }
+
+        if (paInfo->maxOutputChannels > 0) {
+            outputDevices.append(info);
         }
     }
 
-    emit deviceInfoRefreshed(devices);
+    emit inputDeviceInfoRefreshed(inputDevices);
+    emit outputDeviceInfoRefreshed(outputDevices);
 }
 
 QVector<double> AudioDevices::supportedSampleRates(int deviceIndex) const {
