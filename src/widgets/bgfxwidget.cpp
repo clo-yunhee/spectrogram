@@ -2,6 +2,16 @@
 
 #include <bgfx/platform.h>
 
+inline uint32_t argbToRgba(uint32_t argb) {
+    return
+        // Source is in format: 0xAARRGGBB
+        ((argb & 0x00FF0000) << 8) |  // RR______
+        ((argb & 0x0000FF00) << 8) |  // __GG____
+        ((argb & 0x000000FF) << 8) |  // ____BB__
+        ((argb & 0xFF000000) >> 24);  // ______AA
+    // Return value is in format: 0xRRGGBBAA
+}
+
 BgfxWidget::BgfxWidget(QWidget *parent)
     : QWidget(parent), m_isBgfxInitialised(false), m_debugFlags(BGFX_DEBUG_TEXT), m_resetFlags(BGFX_RESET_VSYNC) {
     init();
@@ -37,7 +47,10 @@ void BgfxWidget::init() {
 
     bgfx::setDebug(m_debugFlags);
 
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
+    QPalette pal = palette();
+    uint32_t clearColor = argbToRgba(pal.color(QPalette::Window).rgba());
+
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clearColor, 1.0f, 0);
 
     startTimer(33);
 }
