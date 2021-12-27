@@ -5,6 +5,8 @@
 
 #include <QtWidgets>
 
+#include "views/spectrogram.h"
+
 class BgfxWidget : public QWidget {
    public:
     BgfxWidget(QWidget *parent);
@@ -25,6 +27,8 @@ class BgfxWidget : public QWidget {
 
     uint32_t m_debugFlags;
     uint32_t m_resetFlags;
+
+    views::Spectrogram m_viewSpectrogram;
 };
 
 #endif  // BGFXWIDGET_H

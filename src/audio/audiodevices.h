@@ -39,8 +39,8 @@ class AudioDevices : public QObject {
    signals:
     void hostInfoRefreshed(const QVector<AudioHostInfo>& infos);
 
-    void inputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
-    void outputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos);
+    void inputDeviceInfoRefreshed(const QVector<AudioDeviceInfo> infos);
+    void outputDeviceInfoRefreshed(const QVector<AudioDeviceInfo> infos);
 
    private:
     QVector<double> supportedSampleRates(int deviceIndex) const;

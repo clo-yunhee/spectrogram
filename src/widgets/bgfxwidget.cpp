@@ -1,7 +1,5 @@
 #include "bgfxwidget.h"
 
-#include <bgfx/platform.h>
-
 inline uint32_t argbToRgba(uint32_t argb) {
     return
         // Source is in format: 0xAARRGGBB
@@ -58,6 +56,10 @@ void BgfxWidget::init() {
 void BgfxWidget::update() {
     bgfx::setViewRect(0, 0, 0, width(), height());
     bgfx::touch(0);
+
+    //-- start
+
+    //-- end
 
     bgfx::dbgTextClear();
 

@@ -37,3 +37,13 @@ target_include_directories(portaudio_static INTERFACE $<TARGET_PROPERTY:portaudi
 #-- Build bgfx
 
 add_subdirectory(bgfx.cmake)
+
+#-- Build libsndfile
+
+set(BUILD_TESTING OFF CACHE INTERNAL "" FORCE)
+set(BUILD_PROGRAMS OFF CACHE INTERNAL "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
+set(ENABLE_CPACK OFF CACHE INTERNAL "" FORCE)
+set(ENABLE_PACKAGE_CONFIG OFF CACHE INTERNAL "" FORCE)
+set(INSTALL_PKGCONFIG_MODULE OFF CACHE INTERNAL "" FORCE)
+add_subdirectory(libsndfile)

@@ -7,9 +7,19 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 add_executable(Spectrogram WIN32
     audio/audiodevices.cpp
     audio/audiodevices.h
+    audio/audiofilereader.cpp
+    audio/audiofilereader.h
+    audio/audioguard.h
+    audio/audiotrack.cpp
+    audio/audiotrack.cpp
+    dsp/fftanalyser.cpp
+    dsp/fftanalyser.h
     dsp/windowfunctions.cpp
     dsp/windowfunctions_defs.h
     dsp/windowfunctions.h
+    widgets/views/spectrogram.cpp
+    widgets/views/spectrogram.h
+    widgets/views/view.h
     widgets/bgfxwidget.cpp
     widgets/bgfxwidget.h
     windows/appwindow.cpp
@@ -19,9 +29,9 @@ add_executable(Spectrogram WIN32
     main.cpp
 )
 
-target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static bgfx bx)
+target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static sndfile bgfx bx)
 
-target_compile_definitions(Spectrogram PRIVATE UNICODE _UNICODE BX_CONFIG_DEBUG)
+target_compile_definitions(Spectrogram PRIVATE UNICODE _UNICODE)
 
 target_link_libraries(Spectrogram PRIVATE Qt5::Core Qt5::Widgets fftw3)
 
