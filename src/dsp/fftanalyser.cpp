@@ -46,10 +46,14 @@ void FFTAnalyser::analyse(const std::vector<double> &audio) {
         window[i] = WindowFunctions::eval(m_windowType, i, m_windowLength);
     }
 
+    const int rows = (length - m_windowLength) / m_windowGap;
+    const int cols = m_nfft / 2;
+
+    Eigen::MatrixXd matrix(rows, cols);
+
     int start = 0;             // Start (inclusive)
     int end = m_windowLength;  // End (exclusive)
-
-    std::vector<std::vector<double>> matrix;
+    int rowi = 0;
 
     while (end <= length) {
         // The analysis segment must be NFFT. Zero-pad the remaining samples.
@@ -62,18 +66,16 @@ void FFTAnalyser::analyse(const std::vector<double> &audio) {
 
         fftw_execute(m_plan);
 
-        std::vector<double> column(m_nfft / 2);
         for (int i = 0; i < m_nfft / 2; ++i) {
             const double real = m_data[i];
             const double imag = i > 0 ? m_data[m_nfft - 1 - i] : 0;
 
-            column[i] = real * real + imag * imag;
+            matrix(rowi, i) = real * real + imag * imag;
         }
-
-        matrix.push_back(column);
 
         start += m_windowGap;
         end += m_windowGap;
+        rowi++;
     }
 
     emit analysisDone(matrix);

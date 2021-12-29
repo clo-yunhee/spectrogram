@@ -25,6 +25,7 @@ class AudioTrack : public QObject {
     void append(const std::vector<double>& audio);
 
    signals:
+    void sampleRateChanged(double sampleRate);
     void lengthChanged(int length);
     void durationChanged(double duration);
     void audioAdded();

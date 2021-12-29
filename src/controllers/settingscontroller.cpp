@@ -1,47 +1,43 @@
-#include "settingswindow.h"
+#include "settingscontroller.h"
 
 #include "../dsp/windowfunctions.h"
 #include "../utils.h"
+#include "appcontroller.h"
 
-Q_DECLARE_METATYPE(AudioHostInfo);
-Q_DECLARE_METATYPE(AudioDeviceInfo);
-
-SettingsWindow::SettingsWindow(QWidget* parent) : QWidget(parent) {
-    ui.setupUi(this);
-
-    setWindowFlag(Qt::Window);
-
+SettingsController::SettingsController() {
+    ui.setupUi(&window);
     ui.freqResSuffixLabel->setFixedSize(ui.freqResSuffixLabel->sizeHint());
     ui.timeResSuffixLabel->setFixedSize(ui.timeResSuffixLabel->sizeHint());
-
     ui.windowComboBox->addItems(WindowFunctions::names());
+    window.adjustSize();
 
-    QObject::connect(ui.hostInterfaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-                     AudioDevices::instance(), &AudioDevices::refreshDeviceInfo);
+    connect(ui.hostInterfaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &SettingsController::handleHostSelected);
 
-    QObject::connect(ui.playbackDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-                     &SettingsWindow::handleOutputDeviceSelected);
+    connect(ui.playbackDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &SettingsController::handleOutputDeviceSelected);
 
-    QObject::connect(ui.recordingDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-                     &SettingsWindow::handleInputDeviceSelected);
+    connect(ui.recordingDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &SettingsController::handleInputDeviceSelected);
 
-    QObject::connect(ui.sampleRateComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-                     &SettingsWindow::handleSampleRateSelected);
+    connect(ui.sampleRateComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &SettingsController::handleSampleRateSelected);
 
-    QObject::connect(ui.freqResComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-                     &SettingsWindow::handleFrequencyResolutionChanged);
+    connect(ui.freqResComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &SettingsController::handleFrequencyResolutionChanged);
 
-    QObject::connect(ui.timeResSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
-                     &SettingsWindow::handleTimeResolutionChanged);
-
-    loadSettings();
-
-    adjustSize();
+    connect(ui.timeResSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
+            &SettingsController::handleTimeResolutionChanged);
 }
 
-SettingsWindow::~SettingsWindow() {}
+SettingsController::~SettingsController() {}
 
-void SettingsWindow::handleHostInfoRefreshed(const QVector<AudioHostInfo>& infos) {
+void SettingsController::setWindowParent(AppController& app) {
+    window.setParent(&app.window);
+    window.setWindowFlag(Qt::Window);
+}
+
+void SettingsController::handleHostInfoRefreshed(const QVector<AudioHostInfo>& infos) {
     ui.hostInterfaceComboBox->clear();
 
     for (const auto& info : infos) {
@@ -51,7 +47,7 @@ void SettingsWindow::handleHostInfoRefreshed(const QVector<AudioHostInfo>& infos
     ui.hostInterfaceComboBox->setCurrentIndex(Pa_GetDefaultHostApi());
 }
 
-void SettingsWindow::handleInputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
+void SettingsController::handleInputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
     ui.recordingDeviceComboBox->clear();
 
     const auto hostInfo = ui.hostInterfaceComboBox->currentData().value<AudioHostInfo>();
@@ -73,7 +69,7 @@ void SettingsWindow::handleInputDeviceInfoRefreshed(const QVector<AudioDeviceInf
     }
 }
 
-void SettingsWindow::handleOutputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
+void SettingsController::handleOutputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
     ui.playbackDeviceComboBox->clear();
 
     const auto hostInfo = ui.hostInterfaceComboBox->currentData().value<AudioHostInfo>();
@@ -95,7 +91,32 @@ void SettingsWindow::handleOutputDeviceInfoRefreshed(const QVector<AudioDeviceIn
     }
 }
 
-void SettingsWindow::handleInputDeviceSelected(const int deviceIndex) {
+void SettingsController::show() { window.showNormal(); }
+
+void SettingsController::close() { window.close(); }
+
+void SettingsController::load() {
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+
+    // Make sure the config directory exists.
+    QDir dir(configPath);
+    if (!dir.exists()) dir.mkpath(".");
+
+    settings = std::make_unique<QSettings>(QString("%1/settings.ini").arg(configPath),
+                                           QSettings::IniFormat, &window);
+}
+
+void SettingsController::save() { settings->sync(); }
+
+void SettingsController::handleHostSelected(const int hostApiIndex) {
+    auto hostInfo = ui.hostInterfaceComboBox->itemData(hostApiIndex).value<AudioHostInfo>();
+
+    // TODO settings
+
+    emit hostChanged(hostApiIndex);
+}
+
+void SettingsController::handleInputDeviceSelected(const int deviceIndex) {
     ui.sampleRateComboBox->clear();
 
     auto deviceInfo = ui.recordingDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
@@ -116,15 +137,19 @@ void SettingsWindow::handleInputDeviceSelected(const int deviceIndex) {
 
         ++i;
     }
+
+    emit inputDeviceChanged(deviceIndex);
 }
 
-void SettingsWindow::handleOutputDeviceSelected(const int deviceIndex) {
+void SettingsController::handleOutputDeviceSelected(const int deviceIndex) {
     auto deviceInfo = ui.playbackDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
 
     // TODO setting
+
+    emit inputDeviceChanged(deviceIndex);
 }
 
-void SettingsWindow::handleSampleRateSelected(const int index) {
+void SettingsController::handleSampleRateSelected(const int index) {
     const double sampleRate = ui.sampleRateComboBox->itemData(index).toDouble();
 
     constexpr int nfft0 = 16;
@@ -139,25 +164,25 @@ void SettingsWindow::handleSampleRateSelected(const int index) {
     }
 
     updateResolutionLabels();
+
+    emit sampleRateChanged(sampleRate);
 }
 
-void SettingsWindow::handleFrequencyResolutionChanged(const int index) { updateResolutionLabels(); }
+void SettingsController::handleFrequencyResolutionChanged(const int index) {
+    updateResolutionLabels();
 
-void SettingsWindow::handleTimeResolutionChanged(const double value) { updateResolutionLabels(); }
-
-void SettingsWindow::loadSettings() {
-    QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-
-    // Make sure the config directory exists.
-    QDir dir(configPath);
-    if (!dir.exists()) dir.mkpath(".");
-
-    m_settings = new QSettings(QString("%1/settings.ini").arg(configPath), QSettings::IniFormat, this);
+    const int nfft = ui.freqResComboBox->itemData(index).toInt();
+    emit frequencyResolutionChanged(nfft);
 }
 
-void SettingsWindow::saveSettings() { m_settings->sync(); }
+void SettingsController::handleTimeResolutionChanged(const double value) {
+    updateResolutionLabels();
 
-void SettingsWindow::updateResolutionLabels() {
+    const double updatesPerSec = ui.timeResSpinBox->value();
+    emit timeResolutionChanged(updatesPerSec);
+}
+
+void SettingsController::updateResolutionLabels() {
     const double sampleRate = ui.sampleRateComboBox->currentData().toDouble();
     const int nfft = ui.freqResComboBox->currentData().toInt();
     const double updatesPerSec = ui.timeResSpinBox->value();

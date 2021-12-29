@@ -22,13 +22,15 @@ class BgfxWidget : public QWidget {
     void showEvent(QShowEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-   private:
     bool m_isBgfxInitialised;
 
     uint32_t m_debugFlags;
     uint32_t m_resetFlags;
 
-    views::Spectrogram m_viewSpectrogram;
+   public:
+    struct {
+        views::Spectrogram spectrogram;
+    } views;
 };
 
 #endif  // BGFXWIDGET_H

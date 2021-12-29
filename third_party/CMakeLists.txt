@@ -23,20 +23,21 @@ endif()
 set(ENABLE_AVX  ON CACHE INTERNAL "" FORCE)
 set(ENABLE_AVX2 ON CACHE INTERNAL "" FORCE)
 
-add_subdirectory(fftw-3.3.10)
+add_subdirectory(fftw-3.3.10 EXCLUDE_FROM_ALL)
 target_include_directories(fftw3 INTERFACE $<TARGET_PROPERTY:fftw3,SOURCE_DIR>/api)
 
 #-- Build PortAudio
 
 set(PA_BUILD_STATIC ON CACHE INTERNAL "" FORCE)
 set(PA_BUILD_SHARED OFF CACHE INTERNAL "" FORCE)
+set(PA_DISABLE_INSTALL ON CACHE INTERNAL "" FORCE)
 
-add_subdirectory(portaudio)
+add_subdirectory(portaudio EXCLUDE_FROM_ALL)
 target_include_directories(portaudio_static INTERFACE $<TARGET_PROPERTY:portaudio_static,SOURCE_DIR>/include)
 
 #-- Build bgfx
 
-add_subdirectory(bgfx.cmake)
+add_subdirectory(bgfx.cmake EXCLUDE_FROM_ALL)
 
 #-- Build libsndfile
 
@@ -46,7 +47,19 @@ set(BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
 set(ENABLE_CPACK OFF CACHE INTERNAL "" FORCE)
 set(ENABLE_PACKAGE_CONFIG OFF CACHE INTERNAL "" FORCE)
 set(INSTALL_PKGCONFIG_MODULE OFF CACHE INTERNAL "" FORCE)
-add_subdirectory(libsndfile)
+add_subdirectory(libsndfile EXCLUDE_FROM_ALL)
 
 #-- Build nanovg
-add_subdirectory(nanovg)
+
+add_subdirectory(nanovg EXCLUDE_FROM_ALL)
+
+#-- Build OpenBLAS
+
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "" FORCE)
+set(BUILD_STATIC_LIBS ON CACHE INTERNAL "" FORCE)
+add_subdirectory(OpenBLAS EXCLUDE_FROM_ALL)
+
+#-- Include eigen
+
+add_library(eigen3 INTERFACE)
+target_include_directories(eigen3 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/eigen)

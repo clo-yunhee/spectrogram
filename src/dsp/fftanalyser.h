@@ -3,6 +3,7 @@
 
 #include <fftw3.h>
 
+#include <Eigen/Dense>
 #include <QObject>
 
 #include "windowfunctions.h"
@@ -23,7 +24,7 @@ class FFTAnalyser : public QObject {
     void analyse(const std::vector<double>& audio);
 
    signals:
-    void analysisDone(std::vector<std::vector<double>> matrix);
+    void analysisDone(Eigen::MatrixXd matrix);
 
    private:
     void createTransformPlan();

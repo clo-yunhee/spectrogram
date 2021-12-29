@@ -6,7 +6,7 @@ AudioFileReader::AudioFileReader() {}
 
 AudioFileReader::~AudioFileReader() {}
 
-QStringList AudioFileReader::supportedFileFormats() const {
+QStringList AudioFileReader::supportedFileFormats() {
     // List supported file formats by this build of sndfile.
     SF_FORMAT_INFO format_info;
     int k, count;
@@ -34,7 +34,7 @@ void AudioFileReader::tryRead(const QString& path) {
     SNDFILE* sndfile = sf_open(str.c_str(), SFM_READ, &sfInfo);
 
     if (sndfile == nullptr) {
-        emit readFailed(sf_strerror(sndfile));
+        emit readFailed(path, sf_strerror(sndfile));
         return;
     }
 
@@ -50,7 +50,7 @@ void AudioFileReader::tryRead(const QString& path) {
     sf_readf_double(sndfile, interleaved.data(), frames);
 
     if (sf_close(sndfile) != 0) {
-        emit readFailed(sf_strerror(sndfile));
+        emit readFailed(path, sf_strerror(sndfile));
     }
 
     // Rudimentary mix down to mono. (avg over all channels)
@@ -65,5 +65,5 @@ void AudioFileReader::tryRead(const QString& path) {
         mono[i] /= channels;
     }
 
-    emit readSuccess(mono, sampleRate);
+    emit readSuccess(path, mono, sampleRate);
 }

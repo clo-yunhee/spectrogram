@@ -11,14 +11,14 @@ class AudioFileReader : public QObject {
     AudioFileReader();
     virtual ~AudioFileReader();
 
-    QStringList supportedFileFormats() const;
+    static QStringList supportedFileFormats();
 
    public slots:
     void tryRead(const QString& path);
 
    signals:
-    void readSuccess(const std::vector<double> audio, double sampleRate);
-    void readFailed(const QString& error);
+    void readSuccess(const QString& path, const std::vector<double> audio, double sampleRate);
+    void readFailed(const QString& path, const QString& error);
 };
 
 #endif  // AUDIOFILEREADER_H

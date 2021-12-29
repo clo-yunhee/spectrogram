@@ -17,7 +17,7 @@ BgfxWidget::BgfxWidget(QWidget *parent)
 
 BgfxWidget::~BgfxWidget() {
     if (m_isBgfxInitialised) {
-        m_viewSpectrogram.shutdown();
+        views.spectrogram.shutdown();
         bgfx::shutdown();
     }
 }
@@ -52,7 +52,7 @@ void BgfxWidget::init() {
     bgfx::setViewName(0, "Base");
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clearColor, 1.0f);
 
-    m_viewSpectrogram.init();
+    views.spectrogram.init();
 
     startTimer(33);
 }
@@ -61,10 +61,12 @@ void BgfxWidget::update() {
     bgfx::setViewRect(0, 0, 0, width(), height());
     bgfx::touch(0);
 
-    m_viewSpectrogram.update();
+    views.spectrogram.update();
 }
 
-void BgfxWidget::reset() { bgfx::reset(width(), height(), m_resetFlags, bgfx::TextureFormat::RGBA32U); }
+void BgfxWidget::reset() {
+    bgfx::reset(width(), height(), m_resetFlags, bgfx::TextureFormat::RGBA32U);
+}
 
 void BgfxWidget::timerEvent(QTimerEvent *event) {
     if (m_isBgfxInitialised) {

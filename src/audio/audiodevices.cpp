@@ -66,8 +66,9 @@ void AudioDevices::refreshDeviceInfo(int hostApiIndex) {
 }
 
 QVector<double> AudioDevices::supportedSampleRates(int deviceIndex) const {
-    constexpr double standardSampleRates[] = {8000.0,  9600.0,  11025.0, 12000.0, 16000.0, 22050.0,  24000.0,
-                                              32000.0, 44100.0, 48000.0, 88200.0, 96000.0, 192000.0, -1};
+    constexpr double standardSampleRates[] = {8000.0,  9600.0,  11025.0,  12000.0, 16000.0,
+                                              22050.0, 24000.0, 32000.0,  44100.0, 48000.0,
+                                              88200.0, 96000.0, 192000.0, -1};
 
     PaStreamParameters parameters;
     parameters.device = deviceIndex;

@@ -6,12 +6,15 @@ namespace detail {
 
 constexpr double PI = 3.141592653589793238463;
 
-inline double cossum2(double a0, double a1, int n, int N) { return a0 - a1 * std::cos((2 * PI * n) / N); }
+inline double cossum2(double a0, double a1, int n, int N) {
+    return a0 - a1 * std::cos((2 * PI * n) / N);
+}
 inline double cossum3(double a0, double a1, double a2, int n, int N) {
     return a0 - a1 * std::cos((2 * PI * n) / N) + a2 * std::cos((4 * PI * n) / N);
 }
 inline double cossum4(double a0, double a1, double a2, double a3, int n, int N) {
-    return a0 - a1 * std::cos((2 * PI * n) / N) + a2 * std::cos((4 * PI * n) / N) - a3 * std::cos((6 * PI * n) / N);
+    return a0 - a1 * std::cos((2 * PI * n) / N) + a2 * std::cos((4 * PI * n) / N) -
+           a3 * std::cos((6 * PI * n) / N);
 }
 
 inline double kaiser(double beta, int n, int N) {

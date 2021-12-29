@@ -13,6 +13,8 @@ class Spectrogram : protected View {
     void update() override;
     QRect viewRect() const override;
 
+   public slots:
+
    private:
     NVGcontext* m_nvg;
 

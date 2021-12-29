@@ -12,11 +12,27 @@ add_executable(Spectrogram WIN32
     audio/audioguard.h
     audio/audiotrack.cpp
     audio/audiotrack.cpp
+    controllers/appcontroller.cpp
+    controllers/appcontroller.h
+    controllers/audiocontroller.cpp
+    controllers/audiocontroller.h
+    controllers/maincontroller.cpp
+    controllers/maincontroller.h
+    controllers/settingscontroller.cpp
+    controllers/settingscontroller.h
+    controllers/trackcontroller.cpp
+    controllers/trackcontroller.h
     dsp/fftanalyser.cpp
     dsp/fftanalyser.h
     dsp/windowfunctions.cpp
     dsp/windowfunctions_defs.h
     dsp/windowfunctions.h
+    spectrogram/scaletransform.cpp
+    spectrogram/scaletransform.h
+    spectrogram/spectrumdata.cpp
+    spectrogram/spectrumdata.h
+    spectrogram/transformcache.cpp
+    spectrogram/transformcache.h
     widgets/views/spectrogram.cpp
     widgets/views/spectrogram.h
     widgets/views/view.h
@@ -24,25 +40,29 @@ add_executable(Spectrogram WIN32
     widgets/bgfxwidget.h
     windows/appwindow.cpp
     windows/appwindow.h
-    windows/settingswindow.cpp
-    windows/settingswindow.h
     main.cpp
 )
 
-target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static sndfile bgfx bx nanovg)
+target_compile_definitions(Spectrogram PRIVATE
+    UNICODE _UNICODE
+    EIGEN_USE_BLAS
+)
 
-target_compile_definitions(Spectrogram PRIVATE UNICODE _UNICODE)
-
-target_link_libraries(Spectrogram PRIVATE Qt5::Core Qt5::Widgets fftw3)
+target_link_libraries(Spectrogram PRIVATE
+    Qt5::Core Qt5::Widgets
+    eigen3 openblas_static fftw3
+    portaudio_static sndfile
+    bgfx bx nanovg
+)
 
 add_custom_command(TARGET Spectrogram POST_BUILD
     COMMAND ${CMAKE_COMMAND}
-                -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}
-                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                -DCMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}
-                -DTARGET_EXECUTABLE=$<TARGET_FILE:Spectrogram>
-                -DQT_RUNTIME_DIR=${QT_RUNTIME_DIR}
-                -DQT_LIBRARY_DIR=${QT_LIBRARY_DIR}
-                -DQT_PLUGIN_DIR=${QT_PLUGIN_DIR}
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/copy_runtime_deps.cmake
+        -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}
+        -DTARGET_EXECUTABLE=$<TARGET_FILE:Spectrogram>
+        -DQT_RUNTIME_DIR=${QT_RUNTIME_DIR}
+        -DQT_LIBRARY_DIR=${QT_LIBRARY_DIR}
+        -DQT_PLUGIN_DIR=${QT_PLUGIN_DIR}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/copy_runtime_deps.cmake
 )

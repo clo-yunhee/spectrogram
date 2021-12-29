@@ -12,7 +12,10 @@ void AudioTrack::clear() {
 
 double AudioTrack::sampleRate() const { return m_sampleRate; }
 
-void AudioTrack::setSampleRate(const double sampleRate) { m_sampleRate = sampleRate; }
+void AudioTrack::setSampleRate(const double sampleRate) {
+    m_sampleRate = sampleRate;
+    emit sampleRateChanged(sampleRate);
+}
 
 int AudioTrack::length() const { return (int)m_audio.size(); }
 
@@ -48,4 +51,8 @@ void AudioTrack::append(const std::vector<double>& audio) {
     m_mutex.lock();
     m_audio.insert(m_audio.end(), audio.cbegin(), audio.cend());
     m_mutex.unlock();
+
+    emit lengthChanged(length());
+    emit durationChanged(duration());
+    emit audioAdded();
 }

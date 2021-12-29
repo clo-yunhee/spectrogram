@@ -1,7 +1,6 @@
 #include <QApplication>
 
-#include "windows/appwindow.h"
-#include "windows/settingswindow.h"
+#include "controllers/maincontroller.h"
 
 static void setDarkPalette() {
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -37,8 +36,8 @@ int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
     setDarkPalette();
 
-    AppWindow appWindow;
-    appWindow.showNormal();
+    MainController mainctl;
+    mainctl.start();
 
     return application.exec();
 }
