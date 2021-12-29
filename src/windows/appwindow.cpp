@@ -35,6 +35,10 @@ void AppWindow::handleOpenFile() {
                                                     QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
                                                     QString("Audio files (%1)").arg(extFilter));
 
+    if (fileName.isNull()) {
+        return;
+    }
+
     m_audioFileReader.tryRead(fileName);
 
     setWindowTitle(QString("Spectrogram - %1").arg(QFileInfo(fileName).fileName()));

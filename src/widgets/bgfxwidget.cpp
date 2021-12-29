@@ -11,12 +11,13 @@ inline uint32_t argbToRgba(uint32_t argb) {
 }
 
 BgfxWidget::BgfxWidget(QWidget *parent)
-    : QWidget(parent), m_isBgfxInitialised(false), m_debugFlags(BGFX_DEBUG_TEXT), m_resetFlags(BGFX_RESET_VSYNC) {
+    : QWidget(parent), m_isBgfxInitialised(false), m_debugFlags(0), m_resetFlags(BGFX_RESET_VSYNC) {
     init();
 }
 
 BgfxWidget::~BgfxWidget() {
     if (m_isBgfxInitialised) {
+        m_viewSpectrogram.shutdown();
         bgfx::shutdown();
     }
 }
@@ -48,7 +49,10 @@ void BgfxWidget::init() {
     QPalette pal = palette();
     uint32_t clearColor = argbToRgba(pal.color(QPalette::Window).rgba());
 
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clearColor, 1.0f, 0);
+    bgfx::setViewName(0, "Base");
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clearColor, 1.0f);
+
+    m_viewSpectrogram.init();
 
     startTimer(33);
 }
@@ -57,17 +61,7 @@ void BgfxWidget::update() {
     bgfx::setViewRect(0, 0, 0, width(), height());
     bgfx::touch(0);
 
-    //-- start
-
-    //-- end
-
-    bgfx::dbgTextClear();
-
-    const bgfx::Stats *stats = bgfx::getStats();
-    bgfx::dbgTextPrintf(0, 0, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.", stats->width,
-                        stats->height, stats->textWidth, stats->textHeight);
-
-    bgfx::frame();
+    m_viewSpectrogram.update();
 }
 
 void BgfxWidget::reset() { bgfx::reset(width(), height(), m_resetFlags, bgfx::TextureFormat::RGBA32U); }

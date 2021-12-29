@@ -29,7 +29,7 @@ add_executable(Spectrogram WIN32
     main.cpp
 )
 
-target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static sndfile bgfx bx)
+target_link_libraries(Spectrogram PRIVATE fftw3 portaudio_static sndfile bgfx bx nanovg)
 
 target_compile_definitions(Spectrogram PRIVATE UNICODE _UNICODE)
 

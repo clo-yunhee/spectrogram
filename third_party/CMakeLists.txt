@@ -32,7 +32,7 @@ set(PA_BUILD_STATIC ON CACHE INTERNAL "" FORCE)
 set(PA_BUILD_SHARED OFF CACHE INTERNAL "" FORCE)
 
 add_subdirectory(portaudio)
-target_include_directories(portaudio_static INTERFACE $<TARGET_PROPERTY:portaudio_static,SOURCE_DIR>/include²)
+target_include_directories(portaudio_static INTERFACE $<TARGET_PROPERTY:portaudio_static,SOURCE_DIR>/include)
 
 #-- Build bgfx
 
@@ -47,3 +47,6 @@ set(ENABLE_CPACK OFF CACHE INTERNAL "" FORCE)
 set(ENABLE_PACKAGE_CONFIG OFF CACHE INTERNAL "" FORCE)
 set(INSTALL_PKGCONFIG_MODULE OFF CACHE INTERNAL "" FORCE)
 add_subdirectory(libsndfile)
+
+#-- Build nanovg
+add_subdirectory(nanovg)

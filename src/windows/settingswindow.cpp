@@ -170,11 +170,11 @@ void SettingsWindow::updateResolutionLabels() {
 
     // Update time resolution label.
 
-    const QString label("%1 updates/s (%2 ms, %3 samples)");
+    const QString label("updates/s (%1 ms, %2 samples)");
 
     // TODO: adjust the actual number so there's no overlap between windows.
     const int samples = nfft;
     const int dur = std::round(1000 * samples / sampleRate);
 
-    ui.timeResSuffixLabel->setText(label.arg(updatesPerSec, 0, 'f', 1).arg(dur).arg(samples));
+    ui.timeResSuffixLabel->setText(label.arg(dur).arg(samples));
 }

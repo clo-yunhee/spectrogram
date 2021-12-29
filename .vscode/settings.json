@@ -10,6 +10,7 @@
         "sfconfig.h": "c",
         "random": "cpp",
         "memory": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "qobject": "cpp"
     }
 }

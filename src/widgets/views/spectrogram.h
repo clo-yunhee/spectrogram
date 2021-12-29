@@ -6,11 +6,17 @@
 namespace views {
 class Spectrogram : protected View {
    public:
-    static constexpr bgfx::ViewId id = 0;
+    static constexpr bgfx::ViewId id = 1;
 
-   protected:
     void init() override;
+    void shutdown() override;
     void update() override;
+    QRect viewRect() const override;
+
+   private:
+    NVGcontext* m_nvg;
+
+    double m_timePerPixel;
 };
 }  // namespace views
 
