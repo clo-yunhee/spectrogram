@@ -2,6 +2,7 @@
     "cmake.generator": "Ninja",
     "cmake.configureSettings": {
         "CMAKE_PREFIX_PATH": "C:/Qt/5.15.2/msvc2019_64",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo",
         "ASIOSDK_ROOT_DIR": "C:/Program Files (x86)/ASIOSDK2"
     },
     "files.associations": {
@@ -78,6 +79,9 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "qtmath": "cpp"
+        "qtmath": "cpp",
+        "qsize": "cpp",
+        "xutility": "cpp",
+        "qmainwindow": "cpp"
     }
 }

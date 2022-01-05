@@ -5,8 +5,11 @@
 #include <QObject>
 
 #include "../windows/appwindow.h"
-#include "../windows/ui_app.h"
 #include "settingscontroller.h"
+
+namespace Ui {
+class App;
+}
 
 class AppController : public QObject {
     Q_OBJECT
@@ -17,6 +20,8 @@ class AppController : public QObject {
    public slots:
     void handleFileReadFailed(const QString& path, const QString& error);
     void handleCurrentFileChanged(const QString& path, const QString& fileName);
+
+    void handleSpectrogramUpdated(const Eigen::MatrixXd& matrix);
 
     void show();
     void close();
@@ -31,7 +36,7 @@ class AppController : public QObject {
 
    private:
     AppWindow window;
-    Ui::App ui;
+    Ui::App* ui;
 
     friend void SettingsController::setWindowParent(AppController&);
 };

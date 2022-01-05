@@ -33,8 +33,15 @@ add_executable(Spectrogram WIN32
     spectrogram/spectrumdata.h
     spectrogram/transformcache.cpp
     spectrogram/transformcache.h
+    widgets/layout/boxlayout.cpp
+    widgets/layout/boxlayout.h
+    widgets/layout/layoutitem.cpp
+    widgets/layout/layoutitem.h
+    widgets/layout/viewlayout.cpp
+    widgets/layout/viewlayout.h
     widgets/views/spectrogram.cpp
     widgets/views/spectrogram.h
+    widgets/views/view.cpp
     widgets/views/view.h
     widgets/bgfxwidget.cpp
     widgets/bgfxwidget.h
@@ -45,6 +52,7 @@ add_executable(Spectrogram WIN32
 
 target_compile_definitions(Spectrogram PRIVATE
     UNICODE _UNICODE
+    _USE_MATH_DEFINES
     EIGEN_USE_BLAS
 )
 

@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QStyleFactory>
 
 #include "controllers/maincontroller.h"
 

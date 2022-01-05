@@ -1,5 +1,7 @@
 #include "fftanalyser.h"
 
+#include <QDebug>
+
 FFTAnalyser::FFTAnalyser()
     : m_sampleRate(44100),
       m_nfft(2048),
@@ -19,25 +21,6 @@ FFTAnalyser::~FFTAnalyser() {
     }
 }
 
-void FFTAnalyser::setSampleRate(double sampleRate) {
-    m_sampleRate = sampleRate;
-    checkWindowLengthAndGap();
-}
-
-void FFTAnalyser::setTransformSize(int nfft) {
-    m_nfft = nfft;
-    checkWindowLengthAndGap();
-}
-
-void FFTAnalyser::setWindowGap(double gapHz) {
-    m_gapHz = gapHz;
-    checkWindowLengthAndGap();
-}
-
-void FFTAnalyser::setWindowType(WindowFunctions::WindowType type) { m_windowType = type; }
-
-int FFTAnalyser::windowLength() const { return m_windowLength; }
-
 void FFTAnalyser::analyse(const std::vector<double> &audio) {
     const int length = (int)audio.size();
 
@@ -46,7 +29,7 @@ void FFTAnalyser::analyse(const std::vector<double> &audio) {
         window[i] = WindowFunctions::eval(m_windowType, i, m_windowLength);
     }
 
-    const int rows = (length - m_windowLength) / m_windowGap;
+    const int rows = (int)std::ceil(length / double(m_windowGap));
     const int cols = m_nfft / 2;
 
     Eigen::MatrixXd matrix(rows, cols);
@@ -66,6 +49,12 @@ void FFTAnalyser::analyse(const std::vector<double> &audio) {
 
         fftw_execute(m_plan);
 
+        for (int i = 0; i < m_nfft; ++i) {
+            if (std::isnan(m_data[i])) {
+                qDebug() << "data(" << i << ") has nan";
+            }
+        }
+
         for (int i = 0; i < m_nfft / 2; ++i) {
             const double real = m_data[i];
             const double imag = i > 0 ? m_data[m_nfft - 1 - i] : 0;
@@ -78,8 +67,27 @@ void FFTAnalyser::analyse(const std::vector<double> &audio) {
         rowi++;
     }
 
+    matrix.resize(rowi, Eigen::NoChange);
+
     emit analysisDone(matrix);
 }
+
+void FFTAnalyser::setSampleRate(double sampleRate) {
+    m_sampleRate = sampleRate;
+    checkWindowLengthAndGap();
+}
+
+void FFTAnalyser::setTransformSize(int nfft) {
+    m_nfft = nfft;
+    checkWindowLengthAndGap();
+}
+
+void FFTAnalyser::setWindowGap(double gapHz) {
+    m_gapHz = gapHz;
+    checkWindowLengthAndGap();
+}
+
+void FFTAnalyser::setWindowType(WindowFunctions::Type type) { m_windowType = type; }
 
 void FFTAnalyser::createTransformPlan() {
     if (m_plan != nullptr) {

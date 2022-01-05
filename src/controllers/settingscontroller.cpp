@@ -1,33 +1,46 @@
 #include "settingscontroller.h"
 
-#include "../dsp/windowfunctions.h"
+#include <QDir>
+#include <QStandardPaths>
+
 #include "../utils.h"
+#include "../windows/ui_settings.h"
 #include "appcontroller.h"
 
-SettingsController::SettingsController() {
-    ui.setupUi(&window);
-    ui.freqResSuffixLabel->setFixedSize(ui.freqResSuffixLabel->sizeHint());
-    ui.timeResSuffixLabel->setFixedSize(ui.timeResSuffixLabel->sizeHint());
-    ui.windowComboBox->addItems(WindowFunctions::names());
+SettingsController::SettingsController() : ui(new Ui::Settings) {
+    ui->setupUi(&window);
+    ui->freqResSuffixLabel->setFixedSize(ui->freqResSuffixLabel->sizeHint());
+    ui->timeResSuffixLabel->setFixedSize(ui->timeResSuffixLabel->sizeHint());
+    ui->windowComboBox->addItems(WindowFunctions::names());
+    ui->freqScaleComboBox->addItems(ScaleTransform::names());
     window.adjustSize();
 
-    connect(ui.hostInterfaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+    connect(ui->hostInterfaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &SettingsController::handleHostSelected);
 
-    connect(ui.playbackDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+    connect(ui->playbackDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &SettingsController::handleOutputDeviceSelected);
 
-    connect(ui.recordingDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+    connect(ui->recordingDeviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &SettingsController::handleInputDeviceSelected);
 
-    connect(ui.sampleRateComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+    connect(ui->sampleRateComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &SettingsController::handleSampleRateSelected);
 
-    connect(ui.freqResComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+    connect(ui->freqResComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &SettingsController::handleFrequencyResolutionChanged);
 
-    connect(ui.timeResSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
+    connect(ui->timeResSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
             &SettingsController::handleTimeResolutionChanged);
+
+    connect(ui->minFreqSpinBox, qOverload<int>(&QSpinBox::valueChanged), this,
+            &SettingsController::handleMinFrequencyChanged);
+
+    connect(ui->maxFreqSpinBox, qOverload<int>(&QSpinBox::valueChanged), this,
+            &SettingsController::handleMinFrequencyChanged);
+
+    connect(ui->freqScaleComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &SettingsController::handleFrequencyScaleChanged);
 }
 
 SettingsController::~SettingsController() {}
@@ -38,56 +51,56 @@ void SettingsController::setWindowParent(AppController& app) {
 }
 
 void SettingsController::handleHostInfoRefreshed(const QVector<AudioHostInfo>& infos) {
-    ui.hostInterfaceComboBox->clear();
+    ui->hostInterfaceComboBox->clear();
 
     for (const auto& info : infos) {
-        ui.hostInterfaceComboBox->addItem(info.name, QVariant::fromValue(info));
+        ui->hostInterfaceComboBox->addItem(info.name, QVariant::fromValue(info));
     }
 
-    ui.hostInterfaceComboBox->setCurrentIndex(Pa_GetDefaultHostApi());
+    ui->hostInterfaceComboBox->setCurrentIndex(Pa_GetDefaultHostApi());
 }
 
 void SettingsController::handleInputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
-    ui.recordingDeviceComboBox->clear();
+    ui->recordingDeviceComboBox->clear();
 
-    const auto hostInfo = ui.hostInterfaceComboBox->currentData().value<AudioHostInfo>();
+    const auto hostInfo = ui->hostInterfaceComboBox->currentData().value<AudioHostInfo>();
 
     int i = 0;
 
     for (const auto& info : infos) {
-        ui.recordingDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
+        ui->recordingDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
 
         if (info.index == hostInfo.defaultInputDevice) {
-            ui.recordingDeviceComboBox->setCurrentIndex(i);
+            ui->recordingDeviceComboBox->setCurrentIndex(i);
         }
 
         ++i;
     }
 
     if (hostInfo.defaultInputDevice < 0) {
-        ui.recordingDeviceComboBox->setCurrentIndex(0);
+        ui->recordingDeviceComboBox->setCurrentIndex(0);
     }
 }
 
 void SettingsController::handleOutputDeviceInfoRefreshed(const QVector<AudioDeviceInfo>& infos) {
-    ui.playbackDeviceComboBox->clear();
+    ui->playbackDeviceComboBox->clear();
 
-    const auto hostInfo = ui.hostInterfaceComboBox->currentData().value<AudioHostInfo>();
+    const auto hostInfo = ui->hostInterfaceComboBox->currentData().value<AudioHostInfo>();
 
     int i = 0;
 
     for (const auto& info : infos) {
-        ui.playbackDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
+        ui->playbackDeviceComboBox->addItem(info.name, QVariant::fromValue(info));
 
         if (info.index == hostInfo.defaultOutputDevice) {
-            ui.playbackDeviceComboBox->setCurrentIndex(i);
+            ui->playbackDeviceComboBox->setCurrentIndex(i);
         }
 
         ++i;
     }
 
     if (hostInfo.defaultOutputDevice < 0) {
-        ui.playbackDeviceComboBox->setCurrentIndex(0);
+        ui->playbackDeviceComboBox->setCurrentIndex(0);
     }
 }
 
@@ -109,7 +122,7 @@ void SettingsController::load() {
 void SettingsController::save() { settings->sync(); }
 
 void SettingsController::handleHostSelected(const int hostApiIndex) {
-    auto hostInfo = ui.hostInterfaceComboBox->itemData(hostApiIndex).value<AudioHostInfo>();
+    auto hostInfo = ui->hostInterfaceComboBox->itemData(hostApiIndex).value<AudioHostInfo>();
 
     // TODO settings
 
@@ -117,9 +130,9 @@ void SettingsController::handleHostSelected(const int hostApiIndex) {
 }
 
 void SettingsController::handleInputDeviceSelected(const int deviceIndex) {
-    ui.sampleRateComboBox->clear();
+    ui->sampleRateComboBox->clear();
 
-    auto deviceInfo = ui.recordingDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
+    auto deviceInfo = ui->recordingDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
 
     int i = 0;
 
@@ -129,10 +142,10 @@ void SettingsController::handleInputDeviceSelected(const int deviceIndex) {
     }
 
     for (const auto& sampleRate : deviceInfo.availableSampleRates) {
-        ui.sampleRateComboBox->addItem(QString("%1 Hz").arg(sampleRate), sampleRate);
+        ui->sampleRateComboBox->addItem(QString("%1 Hz").arg(sampleRate), sampleRate);
 
         if (qFuzzyCompare(sampleRate, deviceInfo.defaultSampleRate)) {
-            ui.sampleRateComboBox->setCurrentIndex(i);
+            ui->sampleRateComboBox->setCurrentIndex(i);
         }
 
         ++i;
@@ -142,7 +155,7 @@ void SettingsController::handleInputDeviceSelected(const int deviceIndex) {
 }
 
 void SettingsController::handleOutputDeviceSelected(const int deviceIndex) {
-    auto deviceInfo = ui.playbackDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
+    auto deviceInfo = ui->playbackDeviceComboBox->itemData(deviceIndex).value<AudioDeviceInfo>();
 
     // TODO setting
 
@@ -150,17 +163,17 @@ void SettingsController::handleOutputDeviceSelected(const int deviceIndex) {
 }
 
 void SettingsController::handleSampleRateSelected(const int index) {
-    const double sampleRate = ui.sampleRateComboBox->itemData(index).toDouble();
+    const double sampleRate = ui->sampleRateComboBox->itemData(index).toDouble();
 
     constexpr int nfft0 = 16;
     constexpr int nfft1 = 8192;
 
-    ui.freqResComboBox->clear();
+    ui->freqResComboBox->clear();
 
     for (int nfft = nfft0; nfft <= nfft1; nfft *= 2) {
         const double deltaF = sampleRate / nfft;
 
-        ui.freqResComboBox->addItem(QString("%1 Hz").arg(deltaF, 0, 'f', 1), nfft);
+        ui->freqResComboBox->addItem(QString("%1 Hz").arg(deltaF, 0, 'f', 1), nfft);
     }
 
     updateResolutionLabels();
@@ -171,27 +184,41 @@ void SettingsController::handleSampleRateSelected(const int index) {
 void SettingsController::handleFrequencyResolutionChanged(const int index) {
     updateResolutionLabels();
 
-    const int nfft = ui.freqResComboBox->itemData(index).toInt();
+    const int nfft = ui->freqResComboBox->itemData(index).toInt();
     emit frequencyResolutionChanged(nfft);
 }
 
 void SettingsController::handleTimeResolutionChanged(const double value) {
     updateResolutionLabels();
 
-    const double updatesPerSec = ui.timeResSpinBox->value();
+    const double updatesPerSec = ui->timeResSpinBox->value();
     emit timeResolutionChanged(updatesPerSec);
 }
 
+void SettingsController::handleWindowFunctionChanged(const int index) {
+    auto windowType = static_cast<WindowFunctions::Type>(index);
+    emit windowFunctionChanged(windowType);
+}
+
+void SettingsController::handleMinFrequencyChanged(int value) { emit minFrequencyChanged(value); }
+
+void SettingsController::handleMaxFrequencyChanged(int value) { emit maxFrequencyChanged(value); }
+
+void SettingsController::handleFrequencyScaleChanged(int index) {
+    auto scaleType = static_cast<ScaleTransform::Type>(index);
+    emit frequencyScaleChanged(scaleType);
+}
+
 void SettingsController::updateResolutionLabels() {
-    const double sampleRate = ui.sampleRateComboBox->currentData().toDouble();
-    const int nfft = ui.freqResComboBox->currentData().toInt();
-    const double updatesPerSec = ui.timeResSpinBox->value();
+    const double sampleRate = ui->sampleRateComboBox->currentData().toDouble();
+    const int nfft = ui->freqResComboBox->currentData().toInt();
+    const double updatesPerSec = ui->timeResSpinBox->value();
 
     // Update frequency resolution label.
 
     const QString freqText = qUnicode("(N\ua730\ua730\u1d1b = %1 points per transform)");
 
-    ui.freqResSuffixLabel->setText(freqText.arg(nfft));
+    ui->freqResSuffixLabel->setText(freqText.arg(nfft));
 
     // Update time resolution label.
 
@@ -201,5 +228,5 @@ void SettingsController::updateResolutionLabels() {
     const int samples = nfft;
     const int dur = std::round(1000 * samples / sampleRate);
 
-    ui.timeResSuffixLabel->setText(label.arg(dur).arg(samples));
+    ui->timeResSuffixLabel->setText(label.arg(dur).arg(samples));
 }

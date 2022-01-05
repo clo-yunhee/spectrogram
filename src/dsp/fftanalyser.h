@@ -14,14 +14,13 @@ class FFTAnalyser : public QObject {
     FFTAnalyser();
     virtual ~FFTAnalyser();
 
+    void analyse(const std::vector<double>& audio);
+
+   public slots:
     void setSampleRate(double sampleRate);
     void setTransformSize(int nfft);
     void setWindowGap(double gapHz);
-    void setWindowType(WindowFunctions::WindowType type);
-
-    int windowLength() const;
-
-    void analyse(const std::vector<double>& audio);
+    void setWindowType(WindowFunctions::Type type);
 
    signals:
     void analysisDone(Eigen::MatrixXd matrix);
@@ -36,7 +35,7 @@ class FFTAnalyser : public QObject {
 
     int m_windowLength;
     int m_windowGap;
-    WindowFunctions::WindowType m_windowType;
+    WindowFunctions::Type m_windowType;
 
     fftw_plan m_plan;
     double* m_data;

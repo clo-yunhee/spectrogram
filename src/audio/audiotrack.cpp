@@ -1,5 +1,7 @@
 #include "audiotrack.h"
 
+#include <iostream>
+
 AudioTrack::AudioTrack() : m_sampleRate(44100) {}
 
 AudioTrack::~AudioTrack() {}
@@ -30,12 +32,14 @@ void AudioTrack::retrieveData(std::vector<double>& dest, const int start, int le
 
     if (start < 0 || start >= m_audio.size()) {
         m_mutex.unlock_shared();
-        throw std::out_of_range("AudioTrack::retrieveData: start index out of range");
+        std::cerr << "AudioTrack::retrieveData: start index out of range";
+        return;
     }
 
     if (length <= 0 || start + length > m_audio.size()) {
         m_mutex.unlock_shared();
-        throw std::out_of_range("AudioTrack::retrieveData: end index out of range");
+        std::cerr << "AudioTrack::retrieveData: end index out of range";
+        return;
     }
 
     auto begin = std::next(m_audio.cbegin(), start);

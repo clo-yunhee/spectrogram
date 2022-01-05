@@ -20,7 +20,7 @@ double kaiser16(int n, int N);
 
 class WindowFunctions final {
    public:
-    enum WindowType {
+    enum Type {
         Rectangular = 0,
         Barlett,
         Hamming,
@@ -31,21 +31,21 @@ class WindowFunctions final {
         Kaiser4,
         Kaiser8,
         Kaiser16,
-        WindowTypeLast,
+        TypeLast,
     };
 
-    using Type = double (*)(int n, int N);
+    using FunctionType = double (*)(int n, int N);
 
-    static inline Type get(WindowType type) { return g_funcs[type]; }
+    static inline FunctionType get(Type type) { return g_funcs[type]; }
 
-    static inline double eval(WindowType type, int n, int N) { return (g_funcs[type])(n, N); }
+    static inline double eval(Type type, int n, int N) { return (g_funcs[type])(n, N); }
 
     static const QStringList& names() { return g_names; }
 
    private:
     WindowFunctions() = delete;
 
-    static const Type g_funcs[WindowTypeLast];
+    static const FunctionType g_funcs[TypeLast];
     static const QStringList g_names;
 };
 

@@ -3,11 +3,14 @@
 
 #include <bgfx/bgfx.h>
 
-#include <QtWidgets>
+#include <QTimer>
+#include <QWidget>
+#include <memory>
 
 #include "views/spectrogram.h"
 
 class BgfxWidget : public QWidget {
+    Q_OBJECT
    public:
     BgfxWidget(QWidget *parent);
     virtual ~BgfxWidget();
@@ -17,8 +20,10 @@ class BgfxWidget : public QWidget {
     void update();
     void reset();
 
+   private slots:
+    void handleTimeout();
+
    private:
-    void timerEvent(QTimerEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
@@ -28,6 +33,10 @@ class BgfxWidget : public QWidget {
     uint32_t m_resetFlags;
 
    public:
+    QTimer *m_updateTimer;
+
+    std::unique_ptr<ViewLayout> m_viewLayout;
+
     struct {
         views::Spectrogram spectrogram;
     } views;

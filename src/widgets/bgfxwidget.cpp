@@ -1,5 +1,10 @@
 #include "bgfxwidget.h"
 
+#include <QApplication>
+#include <QMessageBox>
+
+#include "layout/boxlayout.h"
+
 inline uint32_t argbToRgba(uint32_t argb) {
     return
         // Source is in format: 0xAARRGGBB
@@ -12,6 +17,13 @@ inline uint32_t argbToRgba(uint32_t argb) {
 
 BgfxWidget::BgfxWidget(QWidget *parent)
     : QWidget(parent), m_isBgfxInitialised(false), m_debugFlags(0), m_resetFlags(BGFX_RESET_VSYNC) {
+    m_updateTimer = new QTimer(this);
+    m_updateTimer->setTimerType(Qt::PreciseTimer);
+    m_updateTimer->setInterval(15);
+    m_updateTimer->setSingleShot(false);
+
+    connect(m_updateTimer, &QTimer::timeout, this, &BgfxWidget::handleTimeout);
+
     init();
 }
 
@@ -46,15 +58,20 @@ void BgfxWidget::init() {
 
     bgfx::setDebug(m_debugFlags);
 
-    QPalette pal = palette();
-    uint32_t clearColor = argbToRgba(pal.color(QPalette::Window).rgba());
+    uint32_t clearColor = argbToRgba(palette().color(QPalette::Window).darker(110).rgba());
 
     bgfx::setViewName(0, "Base");
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clearColor, 1.0f);
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, clearColor,
+                       1.0f, 0u);
 
-    views.spectrogram.init();
+    m_viewLayout.reset(new BoxLayout(BoxLayout::Vertical));
+    m_viewLayout->setViewRect(QRect(0, 0, width(), height()));
 
-    startTimer(33);
+    views.spectrogram.init(clearColor);
+
+    m_viewLayout->addItem(&views.spectrogram);
+
+    m_updateTimer->start(33);
 }
 
 void BgfxWidget::update() {
@@ -62,13 +79,16 @@ void BgfxWidget::update() {
     bgfx::touch(0);
 
     views.spectrogram.update();
+
+    bgfx::frame();
 }
 
 void BgfxWidget::reset() {
     bgfx::reset(width(), height(), m_resetFlags, bgfx::TextureFormat::RGBA32U);
+    m_viewLayout->setViewRect(QRect(0, 0, width(), height()));
 }
 
-void BgfxWidget::timerEvent(QTimerEvent *event) {
+void BgfxWidget::handleTimeout() {
     if (m_isBgfxInitialised) {
         update();
     }

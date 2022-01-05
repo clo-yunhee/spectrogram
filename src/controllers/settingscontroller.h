@@ -3,15 +3,21 @@
 
 #include <QObject>
 #include <QSettings>
+#include <QWidget>
 #include <memory>
 
 #include "../audio/audiodevices.h"
-#include "../windows/ui_settings.h"
+#include "../dsp/windowfunctions.h"
+#include "../spectrogram/scaletransform.h"
 
 Q_DECLARE_METATYPE(AudioHostInfo);
 Q_DECLARE_METATYPE(AudioDeviceInfo);
 
 class AppController;
+
+namespace Ui {
+class Settings;
+}
 
 class SettingsController : public QObject {
     Q_OBJECT
@@ -39,6 +45,10 @@ class SettingsController : public QObject {
     void sampleRateChanged(double sampleRate);
     void frequencyResolutionChanged(int nfft);
     void timeResolutionChanged(double updatesPerSec);
+    void windowFunctionChanged(WindowFunctions::Type windowType);
+    void minFrequencyChanged(double minFreq);
+    void maxFrequencyChanged(double maxFreq);
+    void frequencyScaleChanged(ScaleTransform::Type scaleType);
 
    private slots:
     void handleHostSelected(int index);
@@ -47,12 +57,16 @@ class SettingsController : public QObject {
     void handleSampleRateSelected(int index);
     void handleFrequencyResolutionChanged(int index);
     void handleTimeResolutionChanged(double value);
+    void handleWindowFunctionChanged(int index);
+    void handleMinFrequencyChanged(int value);
+    void handleMaxFrequencyChanged(int value);
+    void handleFrequencyScaleChanged(int index);
 
    private:
     void updateResolutionLabels();
 
     QWidget window;
-    Ui::Settings ui;
+    Ui::Settings* ui;
 
     std::unique_ptr<QSettings> settings;
 };

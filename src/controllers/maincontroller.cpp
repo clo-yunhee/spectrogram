@@ -1,5 +1,7 @@
 #include "maincontroller.h"
 
+#include <QApplication>
+
 MainController::MainController() {
     settings.setWindowParent(app);
 
@@ -20,6 +22,9 @@ MainController::MainController() {
     connect(&track, &TrackController::currentFileChanged, &app,
             &AppController::handleCurrentFileChanged);
 
+    connect(&track, &TrackController::spectrogramUpdated, &app,
+            &AppController::handleSpectrogramUpdated);
+
     connect(&app, &AppController::tryOpenFile, &audio, &AudioController::tryReadFile);
 
     connect(&app, &AppController::openSettings, &settings, &SettingsController::show);
@@ -28,6 +33,24 @@ MainController::MainController() {
 
     connect(&settings, &SettingsController::hostChanged, &audio,
             &AudioController::refreshDeviceInfo);
+
+    connect(&settings, &SettingsController::frequencyResolutionChanged, &track,
+            &TrackController::handleFrequencyResolutionChanged);
+
+    connect(&settings, &SettingsController::timeResolutionChanged, &track,
+            &TrackController::handleTimeResolutionChanged);
+
+    connect(&settings, &SettingsController::windowFunctionChanged, &track,
+            &TrackController::handleWindowFunctionChanged);
+
+    connect(&settings, &SettingsController::minFrequencyChanged, &track,
+            &TrackController::handleMinFrequencyChanged);
+
+    connect(&settings, &SettingsController::maxFrequencyChanged, &track,
+            &TrackController::handleMaxFrequencyChanged);
+
+    connect(&settings, &SettingsController::frequencyScaleChanged, &track,
+            &TrackController::handleFrequencyScaleChanged);
 
     connect(this, &MainController::started, &audio, &AudioController::refreshHostInfo);
 }

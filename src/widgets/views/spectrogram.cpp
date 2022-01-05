@@ -1,31 +1,93 @@
 #include "spectrogram.h"
 
+#include <QDebug>
 #include <QRect>
+#include <cmath>
 
-void views::Spectrogram::init() {
-    bgfx::setViewName(id, "Spectrogram");
-    bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f);
+void views::Spectrogram::init(uint32_t clearRgba) {
+    View::init(id, "Spectrogram", clearRgba);
 
-    m_nvg = nvgCreate(true, id);
-    bgfx::setViewMode(id, bgfx::ViewMode::Sequential);
+    m_image = -1;
 }
 
-void views::Spectrogram::shutdown() { nvgDelete(m_nvg); }
+void views::Spectrogram::shutdown() { nvgDelete(nvg); }
 
 void views::Spectrogram::update() {
-    QRect rect = viewRect();
-    bgfx::setViewRect(id, rect.x(), rect.y(), rect.width(), rect.height());
-    bgfx::touch(id);
+    QRect rect = View::updateInternal();
 
-    nvgBeginFrame(m_nvg, rect.width(), rect.height(), 1.0f);
+    nvgBeginFrame(nvg, rect.width(), rect.height(), 1.0f);
 
-    nvgFillColor(m_nvg, nvgRGBA(255, 255, 255, 255));
-    nvgRect(m_nvg, 0, 0, rect.width(), rect.height());
-    nvgFill(m_nvg);
+    nvgBeginPath(nvg);
+    nvgFillColor(nvg, nvgRGBA(0, 0, 0, 0));
+    nvgRect(nvg, rect.x(), rect.y(), rect.width(), rect.height());
+    nvgFill(nvg);
 
-    nvgEndFrame(m_nvg);
+    nvgBeginPath(nvg);
+    if (m_image >= 0) {
+        nvgFillPaint(nvg, nvgImagePattern(nvg, rect.x(), rect.y(), rect.width(), rect.height(),
+                                          0.0f, m_image, 1.0f));
+    } else {
+        nvgFillColor(nvg, nvgRGBA(0, 0, 0, 0));
+    }
+    nvgRect(nvg, rect.x(), rect.y(), rect.width(), rect.height());
+    nvgFill(nvg);
 
-    bgfx::frame();
+    nvgEndFrame(nvg);
 }
 
-QRect views::Spectrogram::viewRect() const { return QRect(0, 0, 640, 480); }
+void views::Spectrogram::updateSpectrogramImage(const Eigen::MatrixXd& matrix) {
+    const int width = matrix.rows();
+    const int height = matrix.cols();
+
+    bool createImage = false;
+
+    if (m_image >= 0) {
+        int w, h;
+        nvgImageSize(nvg, m_image, &w, &h);
+
+        if (w != width || h != height) {
+            nvgDeleteImage(nvg, m_image);
+            createImage = true;
+        }
+    } else {
+        createImage = true;
+    }
+
+    struct pixel {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
+    };
+
+    std::vector<pixel> data(width * height);
+
+    const double referenceAmplitude = 1e-2;
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            double amp = matrix(x, height - 1 - y);
+
+            if (amp > referenceAmplitude) {
+                amp = referenceAmplitude;
+            }
+
+            amp /= referenceAmplitude;
+
+            pixel px;
+            px.r = 255 * amp;
+            px.g = 255 * amp;
+            px.b = 255 * amp;
+            px.a = 255;
+
+            data[y * width + x] = px;
+        }
+    }
+
+    if (createImage) {
+        m_image = nvgCreateImageRGBA(nvg, width, height, NVG_IMAGE_PREMULTIPLIED,
+                                     reinterpret_cast<uint8_t*>(data.data()));
+    } else {
+        nvgUpdateImage(nvg, m_image, reinterpret_cast<uint8_t*>(data.data()));
+    }
+}

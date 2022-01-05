@@ -1,6 +1,13 @@
 #include "scaletransform.h"
 
-#include <QtGlobal>
+#include <QDebug>
+
+const QStringList ScaleTransform::g_names = {
+    "Linear",
+    "Logarithmic",
+    "Mel",
+    "ERB",
+};
 
 ScaleTransform::ScaleTransform(Type type, double sampleRate, int nfft, double minFreq,
                                double maxFreq, int numBins)
@@ -47,6 +54,10 @@ void ScaleTransform::assignScaleFunctions() {
             hzToScale = t::hzToMel;
             scaleToHz = t::melToHz;
             break;
+        case TypeErb:
+            hzToScale = t::hzToErb;
+            scaleToHz = t::erbToHz;
+            break;
         default:
             break;
     }
@@ -73,11 +84,22 @@ void ScaleTransform::createTransformMatrix() {
         const int centerCol = (int)std::round(m_nfft * centerFrequency / m_sampleRate);
         const int endCol = (int)std::round(m_nfft * endFrequency / m_sampleRate);
 
-        for (int j = startCol; j < centerCol; ++j) {
-            if (j < m_nfft) m_transform(i, j) = double(j - startCol) / double(centerCol - startCol);
+        if (startCol == centerCol) {
+            m_transform(i, centerCol) = 1;
+        } else {
+            for (int j = startCol; j < centerCol; ++j) {
+                if (j < m_nfft / 2)
+                    m_transform(i, j) = double(j - startCol) / double(centerCol - startCol);
+            }
         }
-        for (int j = centerCol; j <= endCol; ++j) {
-            if (j < m_nfft) m_transform(i, j) = double(j - centerCol) / double(endCol - centerCol);
+
+        if (centerCol == endCol) {
+            m_transform(i, centerCol) = 1;
+        } else {
+            for (int j = centerCol; j <= endCol; ++j) {
+                if (j < m_nfft / 2)
+                    m_transform(i, j) = double(j - centerCol) / double(endCol - centerCol);
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
 
 // clang-format off
 
-const WindowFunctions::Type WindowFunctions::g_funcs[WindowFunctions::WindowTypeLast] = {
+const WindowFunctions::FunctionType WindowFunctions::g_funcs[WindowFunctions::TypeLast] = {
     w::rectangular,     
     w::barlett,       
     w::hamming,
